@@ -1,9 +1,12 @@
 #!/usr/bin/python3
 import tkinter as tk
+from math import *
 tkinter = tk # Make is easier to reference tkinter
 
 isShifted = False # Indicates if shift is held down
 jointLocation = [] # Stores a list of all joint locations
+joinSelectionCount = 0
+
 
 def leftClick(event):
     x, y = event.x, event.y
@@ -13,30 +16,36 @@ def leftClick(event):
         # list of joint locations
         makeJoint(x,y)
         global jointLocation
-        jointLocation += (x,y)
+        jointLocation.append((x,y))
     else:
-        for i, joint in enumerate(jointLocation):
-            if(joint == (x, y)):
-                print("got it #" + i) 
+        if(whichJoint(x, y) is not None):
+            initializeBeamSelection(whichJoint(x, y))
 
-def motion(event):
-    x, y = event.x, event.y
+def whichJoint(curX, curY):
+    for i, joint in enumerate(jointLocation):
+        distanceX = (curX - joint[0])**2
+        distanceY = (curY - joint[1])**2
+        distance = sqrt(distanceX + distanceY)
+        if(radius > distance):
+            return joint         
+
+def initializeBeamSelection(joint):
+    print("you good")
+    '''
+    
+
+
+    '''
 
 def shift(event):
     # Invert shift detection when clicked
     global isShifted
     isShifted = not isShifted
-    print("shift")
-
-def rightClick(event):
-    pass
-
-def middleClick(event):
-    pass
 
 # Draw a circle on the canvas representing a singular joint in the truss
 # with a set radius centered on the mouse position
 def makeJoint(x,y):
+    global radius 
     radius = 15
     canvas.create_oval(x-radius, y-radius, x+radius, y+radius, fill='#000')
 
@@ -50,13 +59,8 @@ canvas.grid(row=0, rowspan=2, column=1)
 canvas.focus_set() # Capture key events on the canvas
 
 # Bind events on the canvas
-canvas.bind('<Motion>', motion) # Mouse motion
+
 canvas.bind('<Button-1>', leftClick) # Primary mouse click
-canvas.bind('<ButtonRelease-1>', rightClick) # Primary mouse release
-canvas.bind('<Button-2>', rightClick) # Secondary mouse click
-canvas.bind('<ButtonRelease-2>', rightClick) # Secondary mouse release
-canvas.bind('<Button-3>', middleClick) # Middle mouse click
-canvas.bind('<ButtonRelease-3>', middleClick) # Middle mouse release
 canvas.bind('<Shift_L>', shift) # Left shift click
 canvas.bind('<KeyRelease-Shift_L>', shift) # Left shift release
 
