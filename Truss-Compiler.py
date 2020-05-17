@@ -7,7 +7,10 @@ isShifted = False # Indicates if shift is held down
 jointLocation = [] # Stores a list of all joint locations
 joinSelectionCount = 0
 
-radius = 15
+windowSize = 850.0 # Total window size
+gridSquareCount = 20.0 # Number of squares displayed
+gridSquareSize = windowSize / gridSquareCount # Pixel count per grid square
+radius = gridSquareSize / 3 # Joint radius size
 
 # Use the distance equation to get the Euclidean distance between two points, given as tuples
 def getDistance(locationOne, locationTwo):
@@ -75,7 +78,6 @@ def getNearestGridLocation(x, y):
     return shortestPosition
 
 def getGridLines(position):
-    gridSquareSize = 42 # Pixel count per grid square
     position -= (position % gridSquareSize) # Get the lower bound
     return (position, position + gridSquareSize) # Return lower and upper bound
 
@@ -89,7 +91,7 @@ root = tk.Tk()
 root.wm_title("Truss Solver")
 
 # Create the canvas and load it onto the root
-canvas = tkinter.Canvas(root, width=850, height=850, background='gray')
+canvas = tkinter.Canvas(root, width=windowSize, height=windowSize, background='gray')
 canvas.grid(row=0, rowspan=2, column=1)
 canvas.focus_set() # Capture key events on the canvas
 
@@ -97,6 +99,11 @@ canvas.focus_set() # Capture key events on the canvas
 canvas.bind('<Button-1>', leftClick) # Primary mouse click
 canvas.bind('<Shift_L>', shift) # Left shift click
 canvas.bind('<KeyRelease-Shift_L>', shift) # Left shift release
+
+# Draw the gridlines on the canvas
+for i in range(int(windowSize) // int(gridSquareSize)):
+    canvas.create_line(i*gridSquareSize, 0, i*gridSquareSize, windowSize)
+    canvas.create_line(0, i*gridSquareSize, windowSize, i*gridSquareSize)
 
 # Execute the program
 root.mainloop() # Nothing below this line gets executed
