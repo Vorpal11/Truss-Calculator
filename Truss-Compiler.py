@@ -2,13 +2,13 @@
 import tkinter as tk
 tkinter = tk # Make is easier to reference tkinter
 
-shift = False # Indicates if shift is held down
+isShifted = False # Indicates if shift is held down
 jointLocation = [] # Stores a list of all joint locations
 
 def leftClick(event):
     x, y = event.x, event.y
     # Only create a joint if the shiftkey is not being held down
-    if(shift == True):
+    if(isShifted == False):
         # Create the joint with the given location and append the center to the
         # list of joint locations
         makeJoint(x,y)
@@ -17,15 +17,15 @@ def leftClick(event):
     else:
         for i, joint in enumerate(jointLocation):
             if(joint == (x, y)):
-                pass
+                print("got it #" + i) 
 
 def motion(event):
     x, y = event.x, event.y
 
 def shift(event):
     # Invert shift detection when clicked
-    global shift
-    shift = not shift
+    global isShifted
+    isShifted = not isShifted
     print("shift")
 
 def rightClick(event):
