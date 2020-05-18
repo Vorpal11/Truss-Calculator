@@ -1,7 +1,11 @@
 #!/usr/bin/python3
+# Import main library
 import tkinter as tk
 from math import *
 tkinter = tk # Make is easier to reference tkinter
+
+# Import custom classes
+from Beam import Beam
 
 isShifted = False # Indicates if shift is held down
 jointLocation = [] # Stores a list of all joint locations
@@ -31,6 +35,11 @@ def leftClick(event):
         # Create the joint with the given location and append position to joint locations
         makeJoint(x,y)
         jointLocation.append((x,y))
+        # TODO: Remove and make it when the user chooses
+        l = len(jointLocation)
+        if l % 2 == 0:
+            b = Beam(jointLocation[l-2], jointLocation[l-1])
+            b.draw(canvas)
     else:
         # Check if a joint was clicked on, if so select it
         currentJoint = getClickedJoint(x, y)
@@ -92,7 +101,7 @@ root.wm_title("Truss Solver")
 
 # Create the canvas and load it onto the root
 canvas = tkinter.Canvas(root, width=windowSize, height=windowSize, background='gray')
-canvas.grid(row=0, rowspan=2, column=1)
+canvas.grid(row=0, column=1)
 canvas.focus_set() # Capture key events on the canvas
 
 # Bind events on the canvas
