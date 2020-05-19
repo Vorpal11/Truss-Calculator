@@ -95,12 +95,6 @@ def getGridLines(position):
     position -= (position % gridSquareSize) # Get the lower bound
     return (position, position + gridSquareSize) # Return lower and upper bound
 
-# Draw a circle on the canvas representing a singular joint in the truss
-# with a set radius centered on the mouse position
-'''def makeJoint(x,y):
-    radius = Joint.radius
-    canvas.create_oval(x-radius, y-radius, x+radius, y+radius, fill='#F00')'''
-
 # Initialize the root window
 root = tk.Tk()
 root.wm_title("Truss Solver")
