@@ -1,25 +1,23 @@
 #!/usr/bin/python3
-# Import main library
-import tkinter as tk
+from Components import *
 from math import *
+import tkinter as tk
 tkinter = tk # Make is easier to reference tkinter
 
-# Import custom classes
-from Beam import Beam
-
 isShifted = False # Indicates if shift is held down
-jointLocation = [] # Stores a list of all joint locations
+joints = [] # Stores a list of all joint locations
 joinSelectionCount = 0
 
 windowSize = 850.0 # Total window size
 gridSquareCount = 20.0 # Number of squares displayed
 gridSquareSize = windowSize / gridSquareCount # Pixel count per grid square
-radius = gridSquareSize / 3 # Joint radius size
+
+Joint.setRadius(gridSquareSize / 3)
 
 # Use the distance equation to get the Euclidean distance between two points, given as tuples
 def getDistance(locationOne, locationTwo):
-    xDistance = (locationOne[0] - locationTwo[0]) ** 2
-    yDistance = (locationOne[1] - locationTwo[1]) ** 2
+    xDistance = (locationOne.x - locationTwo.x) ** 2
+    yDistance = (locationOne.y - locationTwo.y) ** 2
     return sqrt(xDistance + yDistance)
 
 # Process primary click
@@ -28,18 +26,14 @@ def leftClick(event):
 
     # Only create a joint if the shiftkey is not being held down
     if(isShifted == False):
-        global jointLocation
+        global joints
         # Grab the closest grid intersection
         x, y = getNearestGridLocation(x, y)
-        if (x, y) in jointLocation: return # Skip if already exists
+        for joint in joints: 
+            if Point(x, y) == joint.location: return # Skip if already exists
         # Create the joint with the given location and append position to joint locations
-        makeJoint(x,y)
-        jointLocation.append((x,y))
-        # TODO: Remove and make it when the user chooses
-        l = len(jointLocation)
-        if l % 2 == 0:
-            b = Beam(jointLocation[l-2], jointLocation[l-1])
-            b.draw(canvas)
+        joints.append(Joint.fromCoords(x, y))
+        joints[-1].draw(canvas)
     else:
         # Check if a joint was clicked on, if so select it
         currentJoint = getClickedJoint(x, y)
@@ -48,17 +42,28 @@ def leftClick(event):
 
 # Returns the joint that was clicked on if it exists
 def getClickedJoint(x, y):
-    print("Joint locations:", jointLocation)
-    for i, joint in enumerate(jointLocation):
-        if(radius > getDistance((x, y), joint)):
+    print('Joint locations:')
+    for joint in joints: print(f'\t({joint.location.x}, {joint.location.y})')
+    for i, joint in enumerate(joints):
+        if(Joint.radius > getDistance(Point(x, y), joint.location)):
             return joint         
 
 def initializeBeamSelection(joint):
-    print("Clicked on joint:", joint)
+    print(f'Clicked on joint: ({joint.location.x}, {joint.location.y})')
     '''
+    add 1 to the amount of slected joints
+    if at 2 joints yet
+        call make beam
+        call cleanup
+    else
+        call to highlight selected joint
     
 
 
+
+
+    make a cleanup function
+        call if shift let go early or press enter with 2 joints
     '''
 
 def shift(event):
@@ -79,7 +84,7 @@ def getNearestGridLocation(x, y):
     for potentialX in potentialXPositions: 
         for potentialY in potentialYPositions:
             # Calculate the current distance
-            potentialDistance = getDistance((x, y), (potentialX, potentialY))
+            potentialDistance = getDistance(Point(x, y), Point(potentialX, potentialY))
             if potentialDistance < shortestDistance: # Compare against shorter distance
                 # Update shorter distances
                 shortestDistance = potentialDistance
@@ -92,8 +97,9 @@ def getGridLines(position):
 
 # Draw a circle on the canvas representing a singular joint in the truss
 # with a set radius centered on the mouse position
-def makeJoint(x,y):
-    canvas.create_oval(x-radius, y-radius, x+radius, y+radius, fill='#F00')
+'''def makeJoint(x,y):
+    radius = Joint.radius
+    canvas.create_oval(x-radius, y-radius, x+radius, y+radius, fill='#F00')'''
 
 # Initialize the root window
 root = tk.Tk()
