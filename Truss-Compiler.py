@@ -1,16 +1,15 @@
 #!/usr/bin/python3
 from Components import *
-
-import tkinter as tk
 from math import *
+import tkinter as tk
 tkinter = tk # Make is easier to reference tkinter
 
 isShifted = False # Indicates if shift is held down
-jointLocation = [] # Stores a list of all joint locations
+joints = [] # Stores a list of all joint locations
 joinSelectionCount = 0
 
 windowSize = 850.0 # Total window size
-gridSquareCount = 30.0 # Number of squares displayed
+gridSquareCount = 20.0 # Number of squares displayed
 gridSquareSize = windowSize / gridSquareCount # Pixel count per grid square
 
 Joint.setRadius(gridSquareSize / 3)
@@ -18,7 +17,7 @@ Joint.setRadius(gridSquareSize / 3)
 # Use the distance equation to get the Euclidean distance between two points, given as tuples
 def getDistance(locationOne, locationTwo):
     xDistance = (locationOne.x - locationTwo.x) ** 2
-    yDistance = (locationOne.y - locationTwo.y]) ** 2
+    yDistance = (locationOne.y - locationTwo.y) ** 2
     return sqrt(xDistance + yDistance)
 
 # Process primary click
@@ -30,12 +29,11 @@ def leftClick(event):
         global joints
         # Grab the closest grid intersection
         x, y = getNearestGridLocation(x, y)
-        for joints in joints: 
-            if point.x == x and point.y == y
-                return # Skip if already exists
+        for joint in joints: 
+            if Point(x, y) == joint.location: return # Skip if already exists
         # Create the joint with the given location and append position to joint locations
-        joints += Joint(x, y)
-        joints[-1].draw()
+        joints.append(Joint.fromCoords(x, y))
+        joints[-1].draw(canvas)
     else:
         # Check if a joint was clicked on, if so select it
         currentJoint = getClickedJoint(x, y)
@@ -44,13 +42,14 @@ def leftClick(event):
 
 # Returns the joint that was clicked on if it exists
 def getClickedJoint(x, y):
-    print("Joint locations:", jointLocation)
+    print('Joint locations:')
+    for joint in joints: print(f'\t({joint.location.x}, {joint.location.y})')
     for i, joint in enumerate(joints):
-        if(Joint.radius > getDistance((x, y), joint)):
+        if(Joint.radius > getDistance(Point(x, y), joint.location)):
             return joint         
 
 def initializeBeamSelection(joint):
-    print("Clicked on joint:", joint)
+    print(f'Clicked on joint: ({joint.location.x}, {joint.location.y})')
     '''
     add 1 to the amount of slected joints
     if at 2 joints yet
@@ -85,7 +84,7 @@ def getNearestGridLocation(x, y):
     for potentialX in potentialXPositions: 
         for potentialY in potentialYPositions:
             # Calculate the current distance
-            potentialDistance = getDistance((x, y), (potentialX, potentialY))
+            potentialDistance = getDistance(Point(x, y), Point(potentialX, potentialY))
             if potentialDistance < shortestDistance: # Compare against shorter distance
                 # Update shorter distances
                 shortestDistance = potentialDistance
@@ -96,19 +95,13 @@ def getGridLines(position):
     position -= (position % gridSquareSize) # Get the lower bound
     return (position, position + gridSquareSize) # Return lower and upper bound
 
-# Draw a circle on the canvas representing a singular joint in the truss
-# with a set radius centered on the mouse position
-'''def makeJoint(x,y):
-    radius = Joint.radius
-    canvas.create_oval(x-radius, y-radius, x+radius, y+radius, fill='#F00')'''
-
 # Initialize the root window
 root = tk.Tk()
 root.wm_title("Truss Solver")
 
 # Create the canvas and load it onto the root
 canvas = tkinter.Canvas(root, width=windowSize, height=windowSize, background='gray')
-canvas.grid(row=0, rowspan=2, column=1)
+canvas.grid(row=0, column=1)
 canvas.focus_set() # Capture key events on the canvas
 
 # Bind events on the canvas

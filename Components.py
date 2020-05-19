@@ -15,22 +15,41 @@ class Joint:
         self.id = str(random.randint(1, 10000))
         self.location = location
         
-    def fromcoords(x, y):
+    def fromCoords(x, y):
         return Joint(Point(x, y))
 
-    def draw(self, location):
+    def draw(self, canvas):
         radius = Joint.radius
-        canvas.create_oval(location.x - radius, location.y - radius, location.x + radius, location.y+radius, tag=self.id, fill='#F00')
+        canvas.create_oval(self.location.x - radius, self.location.y - radius, self.location.x + radius, self.location.y+radius, tag=self.id, fill='#F00')
 
-    def select(self, location):
+    def select(self, canvas):
         radius = Joint.radius
-        canvas.create_oval(location.x - radius, location.y - radius, location.x + radius, location.y+radius, tag=self.id, fill='#e67300b')
+        canvas.create_oval(self.location.x - radius, self.location.y - radius, self.location.x + radius, self.location.y+radius, tag=self.id, fill='#e67300b')
         
     def unselect(location):
         pass
-point1 = Point(250, 250)
-joint1 = Joint(point1)
-joint2 = Joint.fromcoords(260, 260)
 
+class Beam:
+    color = 'black'
+    selectedColor = 'pink'
+    def __init__(self, start, end):
+        self.id = str(random.randint(1, 10000))
+        self.start = start
+        self.end = end
+        self.force = None
 
+    def draw(self, canvas):
+        # Implement later
 
+        # Blue = inward
+        # Red = outward
+        # Compression
+        start = self.start.location
+        end = self.end.location
+        self.id = canvas.create_line(start.x, start.y, end.x, end.y, tag=self.id, fill=Beam.color)
+
+    def select(self, canvas):
+        canvas.itemconfig(self.id, fill=Beam.selectedColor)
+
+    def unselect(self, canvas):
+        canvas.itemconfig(self.id, fill=Beam.color)
