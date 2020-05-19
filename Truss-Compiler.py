@@ -5,7 +5,6 @@ import tkinter as tk
 tkinter = tk # Make is easier to reference tkinter
 
 isShifted = False # Indicates if shift is held down
-joints = [] # Stores a list of all joint locations
 joinSelectionCount = 0
 
 windowSize = 850.0 # Total window size
@@ -26,26 +25,38 @@ def leftClick(event):
 
     # Only create a joint if the shiftkey is not being held down
     if(isShifted == False):
-        global joints
         # Grab the closest grid intersection
         x, y = getNearestGridLocation(x, y)
-        for joint in joints: 
-            if Point(x, y) == joint.location: return # Skip if already exists
+        for joint in Joint.jointList: 
+            if x == joint.location.x and y == joint.location.y: return # Skip if already exists
         # Create the joint with the given location and append position to joint locations
-        joints.append(Joint.fromCoords(x, y))
-        joints[-1].draw(canvas)
+        joint = Joint.fromCoords(x, y)
+        joint.draw(canvas)
     else:
         # Check if a joint was clicked on, if so select it
-        currentJoint = getClickedJoint(x, y)
-        if(currentJoint is not None):
-            initializeBeamSelection(currentJoint)
+        currentJoint = getClickedJoint(Point(x, y))
+        if (currentJoint is not None) and (currentJoint not in Joint.selectedList):
+            currentJoint.select(canvas)
+            if len(Joint.selectedList) == 2:
+                # TODO: Edge case: joint under beam ???
+                for beam in Beam.beamList:
+                    if (( Joint.selectedList[0] == beam.start and Joint.selectedList[1] == beam.end ) or
+                        ( Joint.selectedList[1] == beam.start and Joint.selectedList[0] == beam.end )):
+                        clearAllSelections()
+                        return
+                beam = Beam(Joint.selectedList[0], Joint.selectedList[1])
+                beam.draw(canvas)
+                carryOnJoint = Joint.selectedList[1]
+                clearAllSelections()
+                carryOnJoint.select(canvas)
+
 
 # Returns the joint that was clicked on if it exists
-def getClickedJoint(x, y):
+def getClickedJoint(clickLocation):
     print('Joint locations:')
-    for joint in joints: print(f'\t({joint.location.x}, {joint.location.y})')
-    for i, joint in enumerate(joints):
-        if(Joint.radius > getDistance(Point(x, y), joint.location)):
+    for joint in Joint.jointList: print(f'\t({joint.location.x}, {joint.location.y})')
+    for i, joint in enumerate(Joint.jointList):
+        if(Joint.radius > getDistance(clickLocation, joint.location)):
             return joint         
 
 def initializeBeamSelection(joint):
@@ -69,8 +80,20 @@ def initializeBeamSelection(joint):
 def shift(event):
     # Invert shift detection when clicked
     global isShifted
-    isShifted = not isShifted
-    print("Shift activated" if isShifted else "Shift deactivated")
+    isShifted = True
+    print("Shift activated")
+
+def unshift(event):
+    global isShifted
+    isShifted = False
+    print("Shift deactivated")
+    clearAllSelections()
+
+def clearAllSelections():
+    for joint in Joint.jointList:
+        if joint.isSelected:
+            joint.unselect(canvas)
+    Joint.selectedList = []
 
 def getNearestGridLocation(x, y):
     # Create a square around 
@@ -107,7 +130,7 @@ canvas.focus_set() # Capture key events on the canvas
 # Bind events on the canvas
 canvas.bind('<Button-1>', leftClick) # Primary mouse click
 canvas.bind('<Shift_L>', shift) # Left shift click
-canvas.bind('<KeyRelease-Shift_L>', shift) # Left shift release
+canvas.bind('<KeyRelease-Shift_L>', unshift) # Left shift release
 
 # Draw the gridlines on the canvas
 for i in range(int(windowSize) // int(gridSquareSize)):
